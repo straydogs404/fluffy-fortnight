@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>古人朋友圈｜怀古诗课堂</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap');
+:root {
+  --text-main:#1f2329;
+  --text-sub:#6b7280;
+  --bg-page:#ffffff;
+  --card-bg:#ffffff;
+  --border-line:#e5e7eb;
+  --primary-green:#2e7d52;
+  --green-light:#e8f5ee;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:"Noto Serif SC",serif;
+  background-color:var(--bg-page);
+  color:var(--text-main);
+  min-height:100vh;
+  padding:24px 16px 60px;
+}
+.wrap{max-width:660px;margin:0 auto;}
+.page-title{
+  text-align:center;font-size:30px;color:var(--primary-green);
+  margin-bottom:20px;letter-spacing:4px;font-weight:600;
+}
+/* 上传控制面板，默认隐藏，按U显示 */
+.control-panel{
+  background:var(--green-light);border:1px solid #c7e4d4;
+  border-radius:10px;padding:14px;margin-bottom:24px;
+  display:none;flex-wrap:wrap;gap:12px;justify-content:center;
+}
+.control-panel.show{display:flex;}
+.btn{
+  padding:8px 12px;background:var(--primary-green);color:#fff;
+  border:none;border-radius:6px;font-size:14px;cursor:pointer;
+}
+input[type="file"]{display:none;}
+
+/* 视图容器：朋友圈 / 人物主页 切换 */
+.view{display:none;}
+.view.active{display:block;}
+
+/* 朋友圈卡片 */
+.moment-card{
+  background:var(--card-bg);border:1px solid var(--border-line);
+  border-radius:12px;padding:24px;margin-bottom:22px;
+  opacity:0;transform:translateY(14px);transition:0.7s ease;
+}
+.moment-card.show{opacity:1;transform:translateY(0);}
+.moment-card.first{opacity:1;transform:translateY(0);}
+.card-head{display:flex;gap:14px;align-items:center;margin-bottom:16px;}
+.avatar{
+  width:48px;height:48px;border-radius:50%;
+  background-color:var(--primary-green);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;cursor:pointer;/*提示可点击进入主页 */
+}
+.info h3{font-size:18px;font-weight:600;}
+.location{font-size:14px;color:var(--text-sub);margin-top:3px;}
+.card-content{font-size:19px;line-height:1.8;margin:16px 0;}
+.media-wrap{
+  width:100%;min-height:180px;background-color:#f9fafb;
+  border-radius:8px;overflow:hidden;display:flex;
+  align-items:center;justify-content:center;color:var(--text-sub);font-size:15px;
+}
+.media-wrap img,.media-wrap video{width:100%;height:100%;object-fit:cover;}
+.card-footer{display:flex;gap:28px;font-size:15px;color:var(--text-sub);margin-top:12px;}
+.tip-text{text-align:center;margin-top:8px;margin-bottom:32px;font-size:16px;color:var(--text-sub);}
+
+/* 人物个人主页样式 */
+.bio-card{
+  border:1px solid var(--border-line);border-radius:12px;padding:26px;background:#fff;
+}
+.bio-back-bar{margin-bottom:18px;}
+.bio-back{cursor:pointer;color:var(--primary-green);font-size:17px;}
+.bio-avatar{
+  width:80px;height:80px;border-radius:50%;background:var(--primary-green);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:32px;margin:0 auto 14px;
+}
+.bio-name{text-align:center;font-size:24px;font-weight:600;margin-bottom:10px;color:var(--primary-green);}
+.bio-media{
+  width:100%;min-height:220px;background:#f9fafb;border-radius:8px;
+  overflow:hidden;display:flex;align-items:center;justify-content:center;
+  color:var(--text-sub);margin:18px 0;
+}
+.bio-media img,.bio-media video{width:100%;height:100%;object-fit:cover;}
+.bio-textarea{
+  width:100%;min-height:140px;border:1px solid var(--border-line);
+  border-radius:8px;padding:12px;font-size:17px;line-height:1.7;resize:vertical;
+}
+
+/* 学生发朋友圈模块 */
+.student-moment-block{
+  border:1px solid var(--border-line);border-radius:12px;padding:22px;background:#ffffff;margin-top:24px;
+}
+.block-title{font-size:20px;color:var(--primary-green);text-align:center;margin-bottom:16px;font-weight:600;}
+.textarea-box{
+  width:100%;min-height:120px;border:1px solid var(--border-line);
+  border-radius:8px;padding:12px;font-size:17px;line-height:1.7;resize:vertical;margin-bottom:12px;
+}
+.btn-group{display:flex;gap:12px;justify-content:center;margin-bottom:16px;}
+#studentResult{border-top:1px dashed #ddd;padding-top:16px;}
+.student-card{
+  border:1px solid var(--green-light);border-radius:10px;padding:16px;
+  background:#f8fbf9;margin-top:10px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="page-title">八百多年前 · 古人朋友圈</h1>
+
+  <!-- 全局上传面板，按U显示隐藏 -->
+  <div class="control-panel" id="controlPanel">
+    <label class="btn">辛弃疾朋友圈配图
+      <input type="file" id="up‑mom‑xin" accept="image/*,video/mp4">
+    </label>
+    <label class="btn">张养浩朋友圈配图
+      <input type="file" id="up‑mom‑zhang" accept="image/*,video/mp4">
+    </label>
+    <label class="btn">辛弃疾主页图片/视频
+      <input type="file" id="up‑bio‑xin" accept="image/*,video/mp4">
+    </label>
+    <label class="btn">张养浩主页图片/视频
+      <input type="file" id="up‑bio‑zhang" accept="image/*,video/mp4">
+    </label>
+    <span style="color:#2e7d52;align-self:center;">【键盘 U：显示/隐藏面板】</span>
+  </div>
+
+  <!-- ==========视图1：朋友圈主页面 ========== -->
+  <div id="viewMoment" class="view active">
+    <!-- 辛弃疾朋友圈 -->
+    <div class="moment-card first">
+      <div class="card-head">
+        <div class="avatar" id="avatarXin">辛</div>
+        <div class="info">
+          <h3>辛弃疾</h3>
+          <div class="location">📍定位：京口·北固亭</div>
+        </div>
+      </div>
+      <div class="media-wrap" id="mediaMomXin">【配图：北固亭长江山水】</div>
+      <div class="card-content">
+何处望神州？满眼风光北固楼。<br>
+千古兴亡多少事？悠悠。不尽长江滚滚流。
+      </div>
+      <div class="card-footer">
+        <span>👍 陆游 点赞</span>
+        <span>💬陆游：壮志难酬！</span>
+      </div>
+    </div>
+
+    <!-- 张养浩朋友圈，点击页面才出现 -->
+    <div class="moment-card" id="card2">
+      <div class="card-head">
+        <div class="avatar" id="avatarZhang">张</div>
+        <div class="info">
+          <h3>张养浩</h3>
+          <div class="location">📍定位：潼关古道</div>
+        </div>
+      </div>
+      <div class="media-wrap" id="mediaMomZhang">【配图：潼关山河废墟】</div>
+      <div class="card-content">
+峰峦如聚，波涛如怒，山河表里潼关路。<br>
+伤心秦汉经行处，宫阙万间都做了土。<br>
+兴，百姓苦；亡，百姓苦！
+      </div>
+      <div class="card-footer">
+        <span>👍 同僚 点赞</span>
+        <span>💬同僚：读之落泪</span>
+      </div>
+    </div>
+
+    <div class="tip-text" id="tip">👉点击页面，解锁第二条朋友圈；点击头像查看人物简介</div>
+
+    <!-- 学生发朋友圈交互 -->
+    <div class="student-moment-block">
+      <div class="block-title">✍我们也来发一条怀古朋友圈</div>
+      <textarea class="textarea-box" id="studentInput" placeholder="假如你登临古迹，请写下你的怀古感慨（可以请同学上台输入）"></textarea>
+      <div class="btn-group">
+        <button class="btn" id="publishBtn">发布朋友圈</button>
+        <button class="btn" id="clearBtn">清空</button>
+      </div>
+      <div id="studentResult"></div>
+    </div>
+  </div>
+
+  <!-- ==========视图2：辛弃疾个人主页 ========== -->
+  <div id="viewBioXin" class="view">
+    <div class="bio-card">
+      <div class="bio-back-bar"><span class="bio-back" id="backFromXin">← 返回朋友圈</span></div>
+      <div class="bio-avatar">辛</div>
+      <div class="bio-name">辛弃疾</div>
+      <div class="bio-media" id="bioMediaXin">【可上传人物图片 / 介绍视频】</div>
+      <textarea class="bio-textarea" id="bioTextXin" placeholder="在这里编辑辛弃疾简介文字：生平、时代背景、经历……">辛弃疾，南宋爱国词人。一生渴望收复中原，却壮志难酬。登上北固亭，登高望远，写下《南乡子·登京口北固亭有怀》。</textarea>
+    </div>
+  </div>
+
+  <!-- ==========视图3：张养浩个人主页 ========== -->
+  <div id="viewBioZhang" class="view">
+    <div class="bio-card">
+      <div class="bio-back-bar"><span class="bio-back" id="backFromZhang">← 返回朋友圈</span></div>
+      <div class="bio-avatar">张</div>
+      <div class="bio-name">张养浩</div>
+      <div class="bio-media" id="bioMediaZhang">【可上传人物图片 / 介绍视频】</div>
+      <textarea class="bio-textarea" id="bioTextZhang" placeholder="在这里编辑张养浩简介文字：生平、时代背景……">张养浩，元代散曲家。赴陕西救灾，途经潼关，目睹历史遗迹与民间疾苦，写下《山坡羊·潼关怀古》。</textarea>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// -------------------页面切换逻辑----------------
+const viewMoment=document.getElementById('viewMoment');
+const viewBioXin=document.getElementById('viewBioXin');
+const viewBioZhang=document.getElementById('viewBioZhang');
+function showView(el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  el.classList.add('active');
+}
+//头像点击跳转主页
+document.getElementById('avatarXin').onclick=()=>showView(viewBioXin);
+document.getElementById('avatarZhang').onclick=()=>showView(viewBioZhang);
+//返回按钮回到朋友圈
+document.getElementById('backFromXin').onclick=()=>showView(viewMoment);
+document.getElementById('backFromZhang').onclick=()=>showView(viewMoment);
+
+// -------------------解锁第二条朋友圈----------------
+const card2=document.getElementById('card2');
+const tip=document.getElementById('tip');
+let isShow=false;
+document.body.addEventListener('click',(e)=>{
+  //点击头像会冒泡，排除头像点击事件，不触发解锁
+  if(e.target.classList.contains('avatar')) return;
+  if(!isShow){
+    card2.classList.add('show');
+    tip.innerText="👉点击页面解锁第二条朋友圈；点击头像查看人物简介";
+    isShow=true;
+  }
+})
+
+// -------------------键盘U切换上传面板----------------
+const controlPanel=document.getElementById('controlPanel');
+document.addEventListener('keydown',e=>{
+  if(e.key.toLowerCase()==='u') controlPanel.classList.toggle('show');
+})
+
+// -------------------文件上传工具函数----------------
+function bindUpload(inputId,wrapId){
+  const inp=document.getElementById(inputId);
+  const wrap=document.getElementById(wrapId);
+  inp.onchange=e=>{
+    const f=e.target.files[0];
+    if(!f) return;
+    const objUrl=URL.createObjectURL(f);
+    wrap.innerHTML='';
+    if(f.type.startsWith('image')){
+      const img=document.createElement('img');img.src=objUrl;wrap.appendChild(img);
+    }else if(f.type.startsWith('video')){
+      const vid=document.createElement('video');
+      vid.src=objUrl;vid.controls=true;vid.muted=true;wrap.appendChild(vid);
+    }
+  }
+}
+//绑定四处上传
+bindUpload('up‑mom‑xin','mediaMomXin');
+bindUpload('up‑mom‑zhang','mediaMomZhang');
+bindUpload('up‑bio‑xin','bioMediaXin');
+bindUpload('up‑bio‑zhang','bioMediaZhang');
+
+// -------------------学生发朋友圈模块----------------
+const studentInput=document.getElementById('studentInput');
+const publishBtn=document.getElementById('publishBtn');
+const clearBtn=document.getElementById('clearBtn');
+const studentResult=document.getElementById('studentResult');
+publishBtn.onclick=()=>{
+  const txt=studentInput.value.trim();
+  if(!txt){alert("请输入怀古朋友圈文案");return;}
+  const div=document.createElement('div');
+  div.className="student-card";
+  div.innerHTML=`<strong>同学朋友圈</strong><div style="margin-top:8px;line-height:1.7;">${txt}</div>`;
+  studentResult.appendChild(div);
+  studentInput.value='';
+}
+clearBtn.onclick=()=>{
+  studentInput.value='';studentResult.innerHTML='';
+}
+</script>
+</body>
+</html>
+<!-- （注：内容由AI生成） -->
